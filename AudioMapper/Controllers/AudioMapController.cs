@@ -1,20 +1,16 @@
-﻿using CSCore.CoreAudioAPI;
+﻿using AudioMapper.Models;
+using CSCore.CoreAudioAPI;
 using CSCore.Win32;
-using AudioMapper.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using PropertyChanged;
+using System.Linq;
 
 namespace AudioMapper.Controllers
 {
     [AddINotifyPropertyChangedInterface]
     public class AudioMapController : IMMNotificationClient
     {
-        private readonly AudioMaps deviceMaps;
         private readonly MMDeviceEnumerator deviceEnumerator;
-
-        public SoundDevices Devices { get; set; }
+        private readonly AudioMaps deviceMaps;
 
         public AudioMapController()
         {
@@ -23,15 +19,7 @@ namespace AudioMapper.Controllers
             Devices = GetSoundDevices();
         }
 
-        private MMDeviceCollection GetAllActiveSystemDevices()
-        {
-            return deviceEnumerator.EnumAudioEndpoints(DataFlow.All, DeviceState.Active);
-        }
-
-        private SoundDevices GetSoundDevices()
-        {
-            return new SoundDevices(GetAllActiveSystemDevices()?.Select(d => Device.FromMMDevice(d)));
-        }
+        public SoundDevices Devices { get; set; }
 
         public void Map()
         {
@@ -61,43 +49,9 @@ namespace AudioMapper.Controllers
             }
         }
 
-        public void Start()
+        void IMMNotificationClient.OnDefaultDeviceChanged(DataFlow dataFlow, Role role, string deviceId)
         {
-            deviceMaps?.Start();
-        }
-
-        public void Stop()
-        {
-            deviceMaps?.Stop();
-        }
-
-        public void RemoveMapIfExists(string originId, string destinationId)
-        {
-            deviceMaps?.RemoveAudioMapById(originId, destinationId);
-        }
-
-        private void AddDeviceIfNewById(string id)
-        {
-            Devices?.AddMMDeviceIfNew(deviceEnumerator.GetDevice(id));
-        }
-
-        private void RemoveDeviceById(string id)
-        {
-            deviceMaps?.RemoveAllAudioMapsWithId(id);
-            Devices?.RemoveAllUsagesOfDeviceById(id);
-        }
-
-        void IMMNotificationClient.OnDeviceStateChanged(string deviceId, DeviceState deviceState)
-        {
-            switch (deviceState)
-            {
-                case DeviceState.Active:
-                    AddDeviceIfNewById(deviceId);
-                    break;
-                default:
-                    RemoveDeviceById(deviceId);
-                    break;
-            }
+            Helper.NothingButMemes();
         }
 
         void IMMNotificationClient.OnDeviceAdded(string deviceId)
@@ -110,14 +64,59 @@ namespace AudioMapper.Controllers
             RemoveDeviceById(deviceId);
         }
 
-        void IMMNotificationClient.OnDefaultDeviceChanged(DataFlow dataFlow, Role role, string deviceId)
+        void IMMNotificationClient.OnDeviceStateChanged(string deviceId, DeviceState deviceState)
         {
-            Helper.NothingButMemes();
+            switch (deviceState)
+            {
+                case DeviceState.Active:
+                    AddDeviceIfNewById(deviceId);
+                    break;
+
+                default:
+                    RemoveDeviceById(deviceId);
+                    break;
+            }
         }
 
         void IMMNotificationClient.OnPropertyValueChanged(string deviceId, PropertyKey key)
         {
             Helper.NothingButMemes();
+        }
+
+        public void RemoveMapIfExists(string originId, string destinationId)
+        {
+            deviceMaps?.RemoveAudioMapById(originId, destinationId);
+        }
+
+        public void Start()
+        {
+            deviceMaps?.Start();
+        }
+
+        public void Stop()
+        {
+            deviceMaps?.Stop();
+        }
+
+        private void AddDeviceIfNewById(string id)
+        {
+            Devices?.AddMMDeviceIfNew(deviceEnumerator.GetDevice(id));
+        }
+
+        private MMDeviceCollection GetAllActiveSystemDevices()
+        {
+            return deviceEnumerator.EnumAudioEndpoints(DataFlow.All, DeviceState.Active);
+        }
+
+        private SoundDevices GetSoundDevices()
+        {
+            return new SoundDevices(GetAllActiveSystemDevices()?.Select(d => Device.FromMMDevice(d)));
+        }
+
+        private void RemoveDeviceById(string id)
+        {
+            deviceMaps?.RemoveAllAudioMapsWithId(id);
+            Devices?.RemoveAllUsagesOfDeviceById(id);
         }
     }
 }

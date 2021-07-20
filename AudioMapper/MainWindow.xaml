@@ -5,53 +5,84 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:model="clr-namespace:AudioMapper.Models"
         xmlns:converters="clr-namespace:AudioMapper.Resources.Converters"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="800">
+        Title="MainWindow"
+        Width="800"
+        Height="800"
+        mc:Ignorable="d">
     <Grid Margin="10,10,10,10">
-        <TreeView x:Name="TvSoundDevices" AllowDrop="True" Margin="0,0,0,100" Drop="TvSoundDevices_Drop" DragOver="TvSoundDevices_DragOver" MouseMove="TvSoundDevices_MouseMove">
+        <TreeView x:Name="TvSoundDevices"
+                  Margin="0,0,0,100"
+                  AllowDrop="True"
+                  DragOver="TvSoundDevices_DragOver"
+                  Drop="TvSoundDevices_Drop"
+                  MouseMove="TvSoundDevices_MouseMove">
             <TreeView.ItemContainerStyle>
                 <Style TargetType="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="True"/>
-                    <Setter Property="AllowDrop" Value="True"/>
+                    <Setter Property="IsExpanded" Value="True" />
+                    <Setter Property="AllowDrop" Value="True" />
                 </Style>
             </TreeView.ItemContainerStyle>
             <TreeView.Resources>
-                <converters:ResourceImageConverter x:Key="ResourceImageConverter"/>
+                <converters:ResourceImageConverter x:Key="ResourceImageConverter" />
                 <HierarchicalDataTemplate DataType="{x:Type model:Device}" ItemsSource="{Binding MappedDevices}">
-                    <StackPanel Orientation="Horizontal" MouseLeftButtonDown="StackPanel_MouseLeftButtonDown" MouseLeftButtonUp="StackPanel_MouseLeftButtonUp">
-                        <Image Width="16" Height="16" Margin="5,0">
+                    <StackPanel MouseLeftButtonDown="StackPanel_MouseLeftButtonDown"
+                                MouseLeftButtonUp="StackPanel_MouseLeftButtonUp"
+                                Orientation="Horizontal">
+                        <Image Width="16"
+                               Height="16"
+                               Margin="5,0">
                             <Image.Source>
                                 <MultiBinding Converter="{StaticResource ResourceImageConverter}">
-                                    <Binding Path="DeviceType"/>
-                                    <Binding Path="MapState"/>
-                                    <Binding Source=".png"/>
+                                    <Binding Path="DeviceType" />
+                                    <Binding Path="MapState" />
+                                    <Binding Source=".png" />
                                 </MultiBinding>
                             </Image.Source>
                         </Image>
-                        <TextBlock Text="{Binding Name}" FontSize="16"/>
-                        <TextBlock Text="{Binding MappedDevices.Count, StringFormat=[{0}]}" Foreground="Blue" FontSize="12" Margin="5,0" VerticalAlignment="Center"/>
+                        <TextBlock FontSize="16" Text="{Binding Name}" />
+                        <TextBlock Margin="5,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   Foreground="Blue"
+                                   Text="{Binding MappedDevices.Count, StringFormat=[{0}]}" />
                     </StackPanel>
                     <HierarchicalDataTemplate.ItemTemplate>
                         <DataTemplate DataType="{x:Type model:MappedDevice}">
-                            <StackPanel Orientation="Horizontal" MouseRightButtonUp="StackPanel_MouseRightButtonUp">
-                                <Image Width="16" Height="16" Margin="5,0">
+                            <StackPanel MouseRightButtonUp="StackPanel_MouseRightButtonUp" Orientation="Horizontal">
+                                <Image Width="16"
+                                       Height="16"
+                                       Margin="5,0">
                                     <Image.Source>
                                         <MultiBinding Converter="{StaticResource ResourceImageConverter}">
-                                            <Binding Path="DeviceType"/>
-                                            <Binding Path="MapState"/>
-                                            <Binding Source=".png"/>
+                                            <Binding Path="DeviceType" />
+                                            <Binding Path="MapState" />
+                                            <Binding Source=".png" />
                                         </MultiBinding>
                                     </Image.Source>
                                 </Image>
-                                <Slider Value="{Binding Volume}" Minimum="0.0" Maximum="1.0" SmallChange="0.01" LargeChange="0.1" Width="100"></Slider>
-                                <TextBlock Text="{Binding Volume, StringFormat={}{0:P0}}" FontSize="8" VerticalAlignment="Center" TextAlignment="Right" Margin="5,0" Width="25"  />
-                                <TextBlock Text="{Binding Name}" FontSize="16"/>
+                                <Slider Width="100"
+                                        LargeChange="0.1"
+                                        Maximum="1.0"
+                                        Minimum="0.0"
+                                        SmallChange="0.01"
+                                        Value="{Binding Volume}" />
+                                <TextBlock Width="25"
+                                           Margin="5,0"
+                                           VerticalAlignment="Center"
+                                           FontSize="8"
+                                           Text="{Binding Volume, StringFormat={}{0:P0}}"
+                                           TextAlignment="Right" />
+                                <TextBlock FontSize="16" Text="{Binding Name}" />
                             </StackPanel>
                         </DataTemplate>
                     </HierarchicalDataTemplate.ItemTemplate>
                 </HierarchicalDataTemplate>
             </TreeView.Resources>
         </TreeView>
-        <Button Content="Button" Width="700" Margin="0,680,0,0" IsTabStop="False" Click="Button_Click"/>
+        <Button Width="700"
+                Margin="0,680,0,0"
+                Click="Button_Click"
+                Content="Button"
+                IsTabStop="False" />
     </Grid>
 </Window>

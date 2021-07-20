@@ -12,19 +12,6 @@ namespace AudioMapper.Models
 
         private float volume;
 
-        public string OriginDeviceID { get; set; }
-        public string DestinationDeviceID { get; set; }
-        public int Latency { get; set; }
-        private ISoundIn CaptureStream { get; set; }
-        private SoundInSource Buffer { get; set; }
-        private WasapiOut PlaybackStream { get; set; }
-
-        public float Volume
-        {
-            get => Helper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume : volume);
-            set => Helper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume = value : volume = value);
-        }
-
         public AudioMap(MMDevice origin, MMDevice destination, int? latency = null)
         {
             Latency = latency ?? DEFAULT_LATENCY;
@@ -36,6 +23,7 @@ namespace AudioMapper.Models
                 case DataFlow.Capture:
                     CaptureStream = new WasapiCapture(true, AudioClientShareMode.Shared, Latency) { Device = origin };
                     break;
+
                 case DataFlow.Render:
                     CaptureStream = new WasapiLoopbackCapture(Latency) { Device = origin };
                     break;
@@ -49,6 +37,27 @@ namespace AudioMapper.Models
             PlaybackStream.Initialize(Buffer);
         }
 
+        public string DestinationDeviceID { get; set; }
+        public int Latency { get; set; }
+        public string OriginDeviceID { get; set; }
+
+        public float Volume
+        {
+            get => Helper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume : volume);
+            set => Helper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume = value : volume = value);
+        }
+
+        private SoundInSource Buffer { get; set; }
+        private ISoundIn CaptureStream { get; set; }
+        private WasapiOut PlaybackStream { get; set; }
+
+        public void Dispose()
+        {
+            Helper.ConsumeExceptions(() => Stop());
+            Helper.ConsumeExceptions(() => CaptureStream?.Dispose());
+            Helper.ConsumeExceptions(() => PlaybackStream?.Dispose());
+        }
+
         public void Start()
         {
             CaptureStream?.Start();
@@ -59,17 +68,11 @@ namespace AudioMapper.Models
                 PlaybackStream.Volume = volume;
             }
         }
+
         public void Stop()
         {
             CaptureStream?.Stop();
             PlaybackStream?.Stop();
-        }
-
-        public void Dispose()
-        {
-            Helper.ConsumeExceptions(() => Stop());
-            Helper.ConsumeExceptions(() => CaptureStream?.Dispose());
-            Helper.ConsumeExceptions(() => PlaybackStream?.Dispose());
         }
     }
 }

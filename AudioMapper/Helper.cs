@@ -2,7 +2,7 @@
 
 namespace AudioMapper
 {
-    class Helper
+    internal class Helper
     {
         public static void ConsumeExceptions(Action action)
         {
@@ -27,6 +27,8 @@ namespace AudioMapper
             return default;
         }
 
-        public static void NothingButMemes() { }
+        public static void NothingButMemes()
+        {
+        }
     }
 }

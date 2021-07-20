@@ -4,7 +4,7 @@ using System.Windows.Media.Imaging;
 
 namespace AudioMapper.Resources.Converters
 {
-    class ResourceImageConverter : System.Windows.Data.IMultiValueConverter
+    internal class ResourceImageConverter : System.Windows.Data.IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
