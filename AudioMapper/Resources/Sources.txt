@@ -1,0 +1,14 @@
+﻿Sourced from https://www.flaticon.com
+
+InputActive
+https://www.flaticon.com/free-icon/microphone_660637
+
+InputInactive
+https://www.flaticon.com/free-icon/muted_149428
+
+OutputActive
+https://www.flaticon.com/free-icon/mute_660545
+
+OutputInactive
+https://www.flaticon.com/free-icon/mute_149138
+

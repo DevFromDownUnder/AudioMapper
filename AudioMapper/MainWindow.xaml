@@ -1,12 +1,57 @@
 ﻿<Window x:Class="AudioMapper.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:local="clr-namespace:AudioMapper"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        Title="MainWindow"
-        Width="800"
-        Height="450"
-        mc:Ignorable="d">
-    <Grid />
+        xmlns:model="clr-namespace:AudioMapper.Models"
+        xmlns:converters="clr-namespace:AudioMapper.Resources.Converters"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="800" Width="800">
+    <Grid Margin="10,10,10,10">
+        <TreeView x:Name="TvSoundDevices" AllowDrop="True" Margin="0,0,0,100" Drop="TvSoundDevices_Drop" DragOver="TvSoundDevices_DragOver" MouseMove="TvSoundDevices_MouseMove">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="True"/>
+                    <Setter Property="AllowDrop" Value="True"/>
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <TreeView.Resources>
+                <converters:ResourceImageConverter x:Key="ResourceImageConverter"/>
+                <HierarchicalDataTemplate DataType="{x:Type model:Device}" ItemsSource="{Binding MappedDevices}">
+                    <StackPanel Orientation="Horizontal" MouseLeftButtonDown="StackPanel_MouseLeftButtonDown" MouseLeftButtonUp="StackPanel_MouseLeftButtonUp">
+                        <Image Width="16" Height="16" Margin="5,0">
+                            <Image.Source>
+                                <MultiBinding Converter="{StaticResource ResourceImageConverter}">
+                                    <Binding Path="DeviceType"/>
+                                    <Binding Path="MapState"/>
+                                    <Binding Source=".png"/>
+                                </MultiBinding>
+                            </Image.Source>
+                        </Image>
+                        <TextBlock Text="{Binding Name}" FontSize="16"/>
+                        <TextBlock Text="{Binding MappedDevices.Count, StringFormat=[{0}]}" Foreground="Blue" FontSize="12" Margin="5,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <HierarchicalDataTemplate.ItemTemplate>
+                        <DataTemplate DataType="{x:Type model:MappedDevice}">
+                            <StackPanel Orientation="Horizontal" MouseRightButtonUp="StackPanel_MouseRightButtonUp">
+                                <Image Width="16" Height="16" Margin="5,0">
+                                    <Image.Source>
+                                        <MultiBinding Converter="{StaticResource ResourceImageConverter}">
+                                            <Binding Path="DeviceType"/>
+                                            <Binding Path="MapState"/>
+                                            <Binding Source=".png"/>
+                                        </MultiBinding>
+                                    </Image.Source>
+                                </Image>
+                                <Slider Value="{Binding Volume}" Minimum="0.0" Maximum="1.0" SmallChange="0.01" LargeChange="0.1" Width="100"></Slider>
+                                <TextBlock Text="{Binding Volume, StringFormat={}{0:P0}}" FontSize="8" VerticalAlignment="Center" TextAlignment="Right" Margin="5,0" Width="25"  />
+                                <TextBlock Text="{Binding Name}" FontSize="16"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </HierarchicalDataTemplate.ItemTemplate>
+                </HierarchicalDataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+        <Button Content="Button" Width="700" Margin="0,680,0,0" IsTabStop="False" Click="Button_Click"/>
+    </Grid>
 </Window>
