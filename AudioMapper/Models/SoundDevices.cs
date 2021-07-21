@@ -37,6 +37,13 @@ namespace AudioMapper.Models
             Inactive
         }
 
+        public enum PendingAction
+        {
+            None,
+            Add,
+            Remove
+        }
+
         public void AddMMDeviceIfNew(MMDevice newDevice)
         {
             if (newDevice != null)

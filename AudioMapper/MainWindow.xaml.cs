@@ -81,12 +81,12 @@ namespace AudioMapper
 
         private void StackPanel_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (!(sender is StackPanel panel) || !(panel.DataContext is MappedDevice selectedDevice))
+            if (!(sender is Grid grid) || !(grid.DataContext is MappedDevice selectedDevice))
             {
                 return;
             }
 
-            Device parentDevice = GetVisualParentDevice(panel);
+            Device parentDevice = GetVisualParentDevice(grid);
 
             controller.RemoveMapIfExists(selectedDevice?.Id, parentDevice?.Id);
             parentDevice?.MappedDevices.Remove(selectedDevice);

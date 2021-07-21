@@ -9,6 +9,7 @@ namespace AudioMapper.Models
         public string Id { get; set; } = string.Empty;
         public SoundDevices.MapState MapState { get; set; } = SoundDevices.MapState.Inactive;
         public string Name { get; set; } = string.Empty;
+        public SoundDevices.PendingAction PendingAction { get; set; } = SoundDevices.PendingAction.None;
         public float Volume { get; set; } = 1.0f;
 
         public static MappedDevice FromDevice(Device source)
