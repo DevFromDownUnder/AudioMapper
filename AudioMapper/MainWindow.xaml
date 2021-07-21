@@ -8,6 +8,7 @@
         Title="MainWindow"
         Width="800"
         Height="800"
+        Closing="Window_Closing"
         mc:Ignorable="d">
     <Grid Margin="10,10,10,10">
         <TreeView x:Name="TvSoundDevices"

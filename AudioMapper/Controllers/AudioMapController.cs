@@ -15,11 +15,12 @@ using AudioMapper.Models;
 using AudioMapper.Helpers;
 using PropertyChanged;
 using System.Linq;
+using System;
 
 namespace AudioMapper.Controllers
 {
     [AddINotifyPropertyChangedInterface]
-    public class AudioMapController : IMMNotificationClient
+    public class AudioMapController : IMMNotificationClient, IDisposable
     {
         private readonly MMDeviceEnumerator deviceEnumerator;
         private readonly AudioMaps deviceMaps;
@@ -42,13 +43,13 @@ namespace AudioMapper.Controllers
             MMDeviceCollection systemDevices = GetAllActiveSystemDevices();
 #endif
 
-            foreach (Device destination in Devices.Where(d => d.MappedDevices.Any()).ToList())
+            foreach (Device destination in Devices?.Where(d => d.MappedDevices.Any()).ToList())
             {
                 foreach (MappedDevice origin in destination.MappedDevices)
                 {
-                    using (MMDevice input = (MMDevice)systemDevices.FirstOrDefault(d => ((MMDevice)d).ID == origin.Id))
+                    using (MMDevice input = (MMDevice)systemDevices?.FirstOrDefault(d => ((MMDevice)d).ID == origin.Id))
                     {
-                        using (MMDevice output = (MMDevice)systemDevices.FirstOrDefault(d => ((MMDevice)d).ID == destination.Id))
+                        using (MMDevice output = (MMDevice)systemDevices?.FirstOrDefault(d => ((MMDevice)d).ID == destination.Id))
                         {
                             if (input == null || output == null)
                             {
@@ -58,7 +59,7 @@ namespace AudioMapper.Controllers
                             origin.MapState = SoundDevices.MapState.Active;
                             destination.MapState = SoundDevices.MapState.Active;
 
-                            deviceMaps.UpdateMap(input, output, origin.Volume);
+                            deviceMaps?.UpdateMap(input, output, origin.Volume);
                         }
                     }
                 }
@@ -119,12 +120,12 @@ namespace AudioMapper.Controllers
 
         private void AddDeviceIfNewById(string id)
         {
-            Devices?.AddMMDeviceIfNew((MMDevice)deviceEnumerator.GetDevice(id));
+            Devices?.AddMMDeviceIfNew((MMDevice)deviceEnumerator?.GetDevice(id));
         }
 
         private MMDeviceCollection GetAllActiveSystemDevices()
         {
-            return deviceEnumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+            return deviceEnumerator?.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
         }
 
         private SoundDevices GetSoundDevices()
@@ -136,6 +137,12 @@ namespace AudioMapper.Controllers
         {
             deviceMaps?.RemoveAllAudioMapsWithId(id);
             Devices?.RemoveAllUsagesOfDeviceById(id);
+        }
+
+        public void Dispose()
+        {
+            Helper.ConsumeExceptions(() => deviceEnumerator?.Dispose());
+            Helper.ConsumeExceptions(() => deviceMaps?.Dispose());
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AudioMapper.Controllers;
+using AudioMapper.Helpers;
 using AudioMapper.Models;
 using System;
 using System.Linq;
@@ -135,8 +136,8 @@ namespace AudioMapper
                 {
                     Point currentPosition = e.GetPosition(TvSoundDevices);
 
-                    if ((Math.Abs(currentPosition.X - this.lastMouseDown.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                        Math.Abs(currentPosition.Y - this.lastMouseDown.Y) > SystemParameters.MinimumVerticalDragDistance) &&
+                    if ((Math.Abs(currentPosition.X - lastMouseDown.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                        Math.Abs(currentPosition.Y - lastMouseDown.Y) > SystemParameters.MinimumVerticalDragDistance) &&
                         TvSoundDevices.SelectedValue is Device)
                     {
                         DragDrop.DoDragDrop(TvSoundDevices, TvSoundDevices.SelectedValue, DragDropEffects.Copy | DragDropEffects.None);
@@ -147,6 +148,11 @@ namespace AudioMapper
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Helper.ConsumeExceptions(() => controller?.Dispose());
         }
     }
 }
