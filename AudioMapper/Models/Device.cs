@@ -1,4 +1,14 @@
-﻿using CSCore.CoreAudioAPI;
+﻿#define DO_NOT_USE_CSCORE
+
+#if USE_CSCORE
+using CSCore.CoreAudioAPI;
+using MMDevice = AudioMapper.Extensions.CSCoreExtensions.MMDevice;
+#else
+
+using NAudio.CoreAudioApi;
+
+#endif
+
 using PropertyChanged;
 using System.Collections.ObjectModel;
 
@@ -19,7 +29,7 @@ namespace AudioMapper.Models
             return new Device()
             {
                 DeviceType = source.DataFlow == DataFlow.Capture ? SoundDevices.DeviceType.Input : SoundDevices.DeviceType.Output,
-                Id = source.DeviceID,
+                Id = source.ID,
                 Name = source.FriendlyName
             };
         }

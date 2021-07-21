@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AudioMapper
+namespace AudioMapper.Helpers
 {
     internal class Helper
     {

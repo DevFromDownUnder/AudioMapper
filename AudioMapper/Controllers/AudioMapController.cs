@@ -1,6 +1,18 @@
-﻿using AudioMapper.Models;
+﻿#define DO_NOT_USE_CSCORE
+
+#if USE_CSCORE
 using CSCore.CoreAudioAPI;
 using CSCore.Win32;
+using MMDevice = AudioMapper.Extensions.CSCoreExtensions.MMDevice;
+#else
+
+using NAudio.CoreAudioApi;
+using NAudio.CoreAudioApi.Interfaces;
+
+#endif
+
+using AudioMapper.Models;
+using AudioMapper.Helpers;
 using PropertyChanged;
 using System.Linq;
 
@@ -23,30 +35,37 @@ namespace AudioMapper.Controllers
 
         public void Map()
         {
+#if USE_CSCORE
             using (MMDeviceCollection systemDevices = GetAllActiveSystemDevices())
             {
-                foreach (Device destination in Devices.Where(d => d.MappedDevices.Any()).ToList())
+#else
+            MMDeviceCollection systemDevices = GetAllActiveSystemDevices();
+#endif
+
+            foreach (Device destination in Devices.Where(d => d.MappedDevices.Any()).ToList())
+            {
+                foreach (MappedDevice origin in destination.MappedDevices)
                 {
-                    foreach (MappedDevice origin in destination.MappedDevices)
+                    using (MMDevice input = (MMDevice)systemDevices.FirstOrDefault(d => ((MMDevice)d).ID == origin.Id))
                     {
-                        using (MMDevice input = systemDevices.FirstOrDefault(d => d.DeviceID == origin.Id))
+                        using (MMDevice output = (MMDevice)systemDevices.FirstOrDefault(d => ((MMDevice)d).ID == destination.Id))
                         {
-                            using (MMDevice output = systemDevices.FirstOrDefault(d => d.DeviceID == destination.Id))
+                            if (input == null || output == null)
                             {
-                                if (input == null || output == null)
-                                {
-                                    continue;
-                                }
-
-                                origin.MapState = SoundDevices.MapState.Active;
-                                destination.MapState = SoundDevices.MapState.Active;
-
-                                deviceMaps.UpdateMap(input, output, origin.Volume);
+                                continue;
                             }
+
+                            origin.MapState = SoundDevices.MapState.Active;
+                            destination.MapState = SoundDevices.MapState.Active;
+
+                            deviceMaps.UpdateMap(input, output, origin.Volume);
                         }
                     }
                 }
             }
+#if USE_CSCORE
+            }
+#endif
         }
 
         void IMMNotificationClient.OnDefaultDeviceChanged(DataFlow dataFlow, Role role, string deviceId)
@@ -100,17 +119,17 @@ namespace AudioMapper.Controllers
 
         private void AddDeviceIfNewById(string id)
         {
-            Devices?.AddMMDeviceIfNew(deviceEnumerator.GetDevice(id));
+            Devices?.AddMMDeviceIfNew((MMDevice)deviceEnumerator.GetDevice(id));
         }
 
         private MMDeviceCollection GetAllActiveSystemDevices()
         {
-            return deviceEnumerator.EnumAudioEndpoints(DataFlow.All, DeviceState.Active);
+            return deviceEnumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
         }
 
         private SoundDevices GetSoundDevices()
         {
-            return new SoundDevices(GetAllActiveSystemDevices()?.Select(d => Device.FromMMDevice(d)));
+            return new SoundDevices(GetAllActiveSystemDevices()?.Select(d => Device.FromMMDevice((MMDevice)d)));
         }
 
         private void RemoveDeviceById(string id)

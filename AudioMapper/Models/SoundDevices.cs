@@ -1,4 +1,14 @@
-﻿using CSCore.CoreAudioAPI;
+﻿#define DO_NOT_USE_CSCORE
+
+#if USE_CSCORE
+using CSCore.CoreAudioAPI;
+using MMDevice = AudioMapper.Extensions.CSCoreExtensions.MMDevice;
+#else
+
+using NAudio.CoreAudioApi;
+
+#endif
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -31,7 +41,7 @@ namespace AudioMapper.Models
         {
             if (newDevice != null)
             {
-                if (!Items.Any(d => d.Id == newDevice?.DeviceID))
+                if (!Items.Any(d => d.Id == newDevice?.ID))
                 {
                     Items.Add(Device.FromMMDevice(newDevice));
                 }

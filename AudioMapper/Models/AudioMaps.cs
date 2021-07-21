@@ -1,8 +1,19 @@
-﻿using CSCore.CoreAudioAPI;
+﻿#define DO_NOT_USE_CSCORE
+
+#if USE_CSCORE
+using CSCore.CoreAudioAPI;
+using MMDevice = AudioMapper.Extensions.CSCoreExtensions.MMDevice;
+#else
+
+using NAudio.CoreAudioApi;
+
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using AudioMapper.Helpers;
 
 namespace AudioMapper.Models
 {
@@ -64,7 +75,7 @@ namespace AudioMapper.Models
 
         public void UpdateMap(MMDevice origin, MMDevice destination, float volume = 1.0f, int? latency = null)
         {
-            AudioMap current = Items?.FirstOrDefault((map) => map?.OriginDeviceID == origin?.DeviceID && map?.DestinationDeviceID == destination?.DeviceID);
+            AudioMap current = Items?.FirstOrDefault((map) => map?.OriginDeviceID == origin?.ID && map?.DestinationDeviceID == destination?.ID);
 
             if (current != null)
             {
