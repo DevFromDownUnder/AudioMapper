@@ -9,8 +9,9 @@ namespace AudioMapper.Models
     {
         public SoundDevices.DeviceType DeviceType { get; set; } = SoundDevices.DeviceType.Output;
         public string Id { get; set; } = string.Empty;
-        public ObservableCollection<MappedDevice> MappedDevices { get; set; } = new ObservableCollection<MappedDevice>();
+        public ObservableCollection<Device> MappedDevices { get; set; } = new ObservableCollection<Device>();
         public SoundDevices.MapState MapState { get; set; } = SoundDevices.MapState.Inactive;
+        public SoundDevices.PendingAction PendingAction { get; set; } = SoundDevices.PendingAction.None;
         public string Name { get; set; } = string.Empty;
         public float Volume { get; set; } = 1.0f;
 

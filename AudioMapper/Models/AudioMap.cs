@@ -1,50 +1,52 @@
 ﻿using AudioMapper.Helpers;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using PropertyChanged;
 using System;
 
 namespace AudioMapper.Models
 {
+    [AddINotifyPropertyChangedInterface]
     public class AudioMap : IDisposable
     {
         public static int DEFAULT_LATENCY = 100;
 
         private float volume;
 
-        public AudioMap(MMDevice origin, MMDevice destination, int? latency = null)
+        public AudioMap(Device origin, Device destination, MMDevice originDevice, MMDevice destinationDevice, int? latency = null)
         {
             Latency = latency ?? DEFAULT_LATENCY;
-            OriginDeviceID = origin.ID;
-            DestinationDeviceID = destination.ID;
+            Origin = origin;
+            Destination = destination;
 
-            switch (origin.DataFlow)
+            switch (originDevice.DataFlow)
             {
                 case DataFlow.Capture:
-                    CaptureStream = new WasapiCapture(origin, true, Latency) { ShareMode = AudioClientShareMode.Shared };
+                    CaptureStream = new WasapiCapture(originDevice, true, Latency) { ShareMode = AudioClientShareMode.Shared };
                     break;
 
                 case DataFlow.Render:
-                    CaptureStream = new WasapiLoopbackCapture(origin) { ShareMode = AudioClientShareMode.Shared };
+                    CaptureStream = new WasapiLoopbackCapture(originDevice) { ShareMode = AudioClientShareMode.Shared };
                     break;
 
                 case DataFlow.All:
-                    CaptureStream = new WasapiCapture(origin, true, Latency) { ShareMode = AudioClientShareMode.Shared };
+                    CaptureStream = new WasapiCapture(originDevice, true, Latency) { ShareMode = AudioClientShareMode.Shared };
                     break;
             }
 
             Buffer = new WaveInProvider(CaptureStream);
-            PlaybackStream = new WasapiOut(destination, AudioClientShareMode.Shared, true, Latency);
+            PlaybackStream = new WasapiOut(destinationDevice, AudioClientShareMode.Shared, true, Latency);
             PlaybackStream.Init(Buffer);
         }
 
-        public string DestinationDeviceID { get; set; }
+        public Device Destination { get; set; }
         public int Latency { get; set; }
-        public string OriginDeviceID { get; set; }
+        public Device Origin { get; set; }
 
         public float Volume
         {
-            get => Helper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume : volume);
-            set => Helper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume = value : volume = value);
+            get => FunctionHelper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume : volume);
+            set => FunctionHelper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume = value : volume = value);
         }
 
         private WaveInProvider Buffer { get; set; }
@@ -53,15 +55,19 @@ namespace AudioMapper.Models
 
         public void Dispose()
         {
-            Helper.ConsumeExceptions(() => Stop());
-            Helper.ConsumeExceptions(() => CaptureStream?.Dispose());
-            Helper.ConsumeExceptions(() => PlaybackStream?.Dispose());
+            FunctionHelper.ConsumeExceptions(() => Stop());
+            FunctionHelper.ConsumeExceptions(() => CaptureStream?.Dispose());
+            FunctionHelper.ConsumeExceptions(() => PlaybackStream?.Dispose());
         }
 
         public void Start()
         {
-            CaptureStream?.StartRecording();
-            PlaybackStream?.Play();
+            if (PlaybackStream?.PlaybackState != PlaybackState.Playing)
+            {
+                //Only restart playing if we were stopped
+                CaptureStream?.StartRecording();
+                PlaybackStream?.Play();
+            }
 
             if (PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing)
             {
@@ -71,8 +77,12 @@ namespace AudioMapper.Models
 
         public void Stop()
         {
-            CaptureStream?.StopRecording();
-            PlaybackStream?.Stop();
+            if (PlaybackStream?.PlaybackState != PlaybackState.Playing)
+            {
+                //Only stop playing if we were playing
+                CaptureStream?.StopRecording();
+                PlaybackStream?.Stop();
+            }
         }
     }
 }

@@ -110,13 +110,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Controllers\AudioMapsController.cs" />
+    <Compile Include="Controllers\AudioMapController.cs" />
+    <Compile Include="Controllers\DeviceController.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />
-    <Compile Include="Helpers\Helper.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Helpers\FunctionHelper.cs" />
+    <Compile Include="Logic\DeviceComparer.cs" />
     <Compile Include="Models\AudioMap.cs" />
-    <Compile Include="Models\AudioMaps.cs" />
     <Compile Include="Models\Device.cs" />
-    <Compile Include="Models\MappedDevice.cs" />
     <Compile Include="Models\SoundDevices.cs" />
     <Compile Include="Resources\Converters\ResourceImageConverter.cs" />
     <Page Include="MainWindow.xaml">

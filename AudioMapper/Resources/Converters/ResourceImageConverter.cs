@@ -9,7 +9,7 @@ namespace AudioMapper.Resources.Converters
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            return Helper.ConsumeExceptions(() => new BitmapImage(new Uri(string.Format("pack://application:,,,/Resources/{0}", string.Join<object>("", values)))));
+            return FunctionHelper.ConsumeExceptions(() => new BitmapImage(new Uri(string.Format("pack://application:,,,/Resources/{0}", string.Join<object>("", values)))));
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

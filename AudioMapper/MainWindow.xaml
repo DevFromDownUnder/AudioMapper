@@ -10,13 +10,27 @@
         Height="800"
         Closing="Window_Closing"
         mc:Ignorable="d">
-    <Grid Margin="10,10,10,10">
+    <Window.Resources>
+        <converters:ResourceImageConverter x:Key="ResourceImageConverter" />
+    </Window.Resources>
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <TreeView x:Name="TvSoundDevices"
-                  Margin="0,0,0,100"
+                  Grid.Column="0"
+                  Grid.Row="0"
                   AllowDrop="True"
                   DragOver="TvSoundDevices_DragOver"
                   Drop="TvSoundDevices_Drop"
-                  MouseMove="TvSoundDevices_MouseMove">
+                  MouseMove="TvSoundDevices_MouseMove" 
+                  ItemsSource="{Binding Controller.Devices.CollectionView}" >
             <TreeView.ItemContainerStyle>
                 <Style TargetType="TreeViewItem">
                     <Setter Property="IsExpanded" Value="True" />
@@ -24,7 +38,6 @@
                 </Style>
             </TreeView.ItemContainerStyle>
             <TreeView.Resources>
-                <converters:ResourceImageConverter x:Key="ResourceImageConverter" />
                 <HierarchicalDataTemplate DataType="{x:Type model:Device}" ItemsSource="{Binding MappedDevices}">
                     <Grid Margin="5"
                           HorizontalAlignment="Stretch"
@@ -46,7 +59,8 @@
                                 <MultiBinding Converter="{StaticResource ResourceImageConverter}">
                                     <Binding Path="DeviceType" />
                                     <Binding Path="MapState" />
-                                    <Binding Source="None.png" />
+                                    <Binding Path="PendingAction" />
+                                    <Binding Source=".png" />
                                 </MultiBinding>
                             </Image.Source>
                         </Image>
@@ -63,7 +77,7 @@
                                    Text="{Binding MappedDevices.Count, StringFormat=[{0}]}" />
                     </Grid>
                     <HierarchicalDataTemplate.ItemTemplate>
-                        <DataTemplate DataType="{x:Type model:MappedDevice}">
+                        <DataTemplate DataType="{x:Type model:Device}">
                             <Grid Margin="5"
                                   HorizontalAlignment="Stretch"
                                   MouseRightButtonUp="StackPanel_MouseRightButtonUp">
@@ -114,8 +128,84 @@
                 </HierarchicalDataTemplate>
             </TreeView.Resources>
         </TreeView>
-        <Button Width="700"
-                Margin="0,680,0,0"
+        <Separator Grid.Column="1" Grid.Row="0" VerticalAlignment="Stretch" Width="5" />
+        <TreeView
+                  Grid.Column="2"
+                  Grid.Row="0"
+                  ItemsSource="{Binding Controller.MapController.LiveMaps.CollectionView}" >
+            <TreeView.Resources>
+                <DataTemplate DataType="{x:Type model:AudioMap}">
+                    <Grid HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="16" />
+                        </Grid.RowDefinitions>
+                        <Image Grid.Row="0" Grid.Column="0">
+                            <Image.Source>
+                                <MultiBinding Converter="{StaticResource ResourceImageConverter}">
+                                    <Binding Path="Origin.DeviceType" />
+                                    <Binding Source="ActiveNone.png" />
+                                </MultiBinding>
+                            </Image.Source>
+                        </Image>
+                        <Slider Grid.Row="0"
+                                        Grid.Column="2"
+                                        Width="100"
+                                        VerticalAlignment="Center"
+                                        LargeChange="0.1"
+                                        Maximum="1.0"
+                                        Minimum="0.0"
+                                        SmallChange="0.01"
+                                        IsEnabled="False"
+                                        Value="{Binding Volume}" />
+                        <TextBlock Grid.Row="0"
+                                           Grid.Column="4"
+                                           VerticalAlignment="Center"
+                                           FontSize="8"
+                                           Text="{Binding Volume, StringFormat={}{0:P0}}" />
+                        <TextBlock Grid.Row="0"
+                                           Grid.Column="6"
+                                           VerticalAlignment="Center"
+                                           FontSize="8"
+                                           Text="{Binding Origin.Name}" />
+                        <TextBlock Grid.Row="0"
+                                           Grid.Column="7"
+                                           VerticalAlignment="Center"
+                                           FontSize="8"
+                                           Text="->" />
+                        <Image Grid.Row="0" Grid.Column="8">
+                            <Image.Source>
+                                <MultiBinding Converter="{StaticResource ResourceImageConverter}">
+                                    <Binding Path="Origin.DeviceType" />
+                                    <Binding Source="ActiveNone.png" />
+                                </MultiBinding>
+                            </Image.Source>
+                        </Image>
+                        <TextBlock Grid.Row="0"
+                                           Grid.Column="10"
+                                           VerticalAlignment="Center"
+                                           FontSize="8"
+                                           Text="{Binding Destination.Name}" />
+                    </Grid>
+                </DataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+        <Button
+                  Grid.Column="0"
+                  Grid.Row="1"
+            Grid.ColumnSpan="3"
                 Click="Button_Click"
                 Content="Button"
                 IsTabStop="False" />

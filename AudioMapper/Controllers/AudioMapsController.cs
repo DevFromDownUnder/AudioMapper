@@ -56,40 +56,6 @@ namespace AudioMapper.Controllers
             }
         }
 
-        void IMMNotificationClient.OnDefaultDeviceChanged(DataFlow dataFlow, Role role, string deviceId)
-        {
-            Helper.NothingButMemes();
-        }
-
-        void IMMNotificationClient.OnDeviceAdded(string deviceId)
-        {
-            AddDeviceIfNewById(deviceId);
-        }
-
-        void IMMNotificationClient.OnDeviceRemoved(string deviceId)
-        {
-            RemoveDeviceById(deviceId);
-        }
-
-        void IMMNotificationClient.OnDeviceStateChanged(string deviceId, DeviceState deviceState)
-        {
-            switch (deviceState)
-            {
-                case DeviceState.Active:
-                    AddDeviceIfNewById(deviceId);
-                    break;
-
-                default:
-                    RemoveDeviceById(deviceId);
-                    break;
-            }
-        }
-
-        void IMMNotificationClient.OnPropertyValueChanged(string deviceId, PropertyKey key)
-        {
-            Helper.NothingButMemes();
-        }
-
         public void RemoveMapIfExists(string originId, string destinationId)
         {
             deviceMaps?.RemoveAudioMapById(originId, destinationId);

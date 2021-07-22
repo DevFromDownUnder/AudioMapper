@@ -15,24 +15,23 @@ namespace AudioMapper
     /// </summary>
     public partial class MainWindow : Window
     {
-        private AudioMapsController controller;
         private Point lastMouseDown;
+
+        public DeviceController Controller { get; } = new DeviceController();
 
         public MainWindow()
         {
+            //Need to set context for some reason it doesn't default
+            DataContext = this;
+
             InitializeComponent();
-
-            controller = new AudioMapsController();
-
-            TvSoundDevices.ItemsSource = controller.Devices;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                controller.Map();
-                controller.Start();
+                Controller.PushMapsToLive();
             }
             catch (Exception ex)
             {
@@ -59,20 +58,17 @@ namespace AudioMapper
             }
         }
 
-        private bool IsValidDropTarget(DragEventArgs e, ref Device source, ref Device target)
+        private bool IsValidDropTarget(DragEventArgs e, ref Device origin, ref Device destination)
         {
             if (!(e.Data.GetData(typeof(Device)) is Device sourceDevice) || !(e.OriginalSource is TextBlock targetElement) || !(targetElement.DataContext is Device targetDevice))
             {
                 return false;
             }
 
-            source = sourceDevice;
-            target = targetDevice;
+            destination = sourceDevice;
+            origin = targetDevice;
 
-            return source.Id != target.Id && //Not the same device
-                    target.DeviceType != SoundDevices.DeviceType.Input && //Can't output to a microphone
-                    !target.MappedDevices.Any(d => d.Id == sourceDevice.Id) && //Has not already been added
-                    !source.MappedDevices.Any(d => d.Id == targetDevice.Id); //Destination is not mapped the origin already (will cause self reference);
+            return Controller?.CanMap(origin, destination) ?? false;
         }
 
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => lastMouseDown = e.GetPosition(TvSoundDevices);
@@ -81,28 +77,27 @@ namespace AudioMapper
 
         private void StackPanel_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (!(sender is Grid grid) || !(grid.DataContext is MappedDevice selectedDevice))
+            if (!(sender is Grid grid) || !(grid.DataContext is Device selectedDevice))
             {
                 return;
             }
 
             Device parentDevice = GetVisualParentDevice(grid);
+            //controller.RemoveMapIfExists(selectedDevice?.Id, parentDevice?.Id);
+            //parentDevice?.MappedDevices.Remove(selectedDevice);
 
-            controller.RemoveMapIfExists(selectedDevice?.Id, parentDevice?.Id);
-            parentDevice?.MappedDevices.Remove(selectedDevice);
-
-            if (!parentDevice.MappedDevices.Any())
-            {
-                parentDevice.MapState = SoundDevices.MapState.Inactive;
-            }
+            //if (!parentDevice.MappedDevices.Any())
+            //{
+            //    parentDevice.MapState = SoundDevices.MapState.Inactive;
+            //}
         }
 
         private void TvSoundDevices_DragOver(object sender, DragEventArgs e)
         {
-            Device source = null;
-            Device target = null;
+            Device origin = null;
+            Device destination = null;
 
-            if (IsValidDropTarget(e, ref source, ref target))
+            if (IsValidDropTarget(e, ref origin, ref destination))
             {
                 e.Effects = DragDropEffects.Copy;
             }
@@ -116,12 +111,12 @@ namespace AudioMapper
         {
             lastMouseDown = default;
 
-            Device source = null;
-            Device target = null;
+            Device origin = null;
+            Device destination = null;
 
-            if (IsValidDropTarget(e, ref source, ref target))
+            if (IsValidDropTarget(e, ref origin, ref destination))
             {
-                target.MappedDevices.Add(MappedDevice.FromDevice(source));
+                Controller?.AddMap(origin, destination);
             }
         }
 
@@ -152,7 +147,7 @@ namespace AudioMapper
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Helper.ConsumeExceptions(() => controller?.Dispose());
+            FunctionHelper.ConsumeExceptions(() => Controller?.Dispose());
         }
     }
 }
