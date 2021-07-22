@@ -1,14 +1,4 @@
-﻿#define DO_NOT_USE_CSCORE
-
-#if USE_CSCORE
-using CSCore.CoreAudioAPI;
-using MMDevice = AudioMapper.Extensions.CSCoreExtensions.MMDevice;
-#else
-
-using NAudio.CoreAudioApi;
-
-#endif
-
+﻿using NAudio.CoreAudioApi;
 using PropertyChanged;
 using System.Collections.ObjectModel;
 

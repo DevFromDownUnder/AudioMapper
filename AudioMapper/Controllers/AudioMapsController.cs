@@ -1,31 +1,20 @@
-﻿#define DO_NOT_USE_CSCORE
-
-#if USE_CSCORE
-using CSCore.CoreAudioAPI;
-using CSCore.Win32;
-using MMDevice = AudioMapper.Extensions.CSCoreExtensions.MMDevice;
-#else
-
+﻿using AudioMapper.Helpers;
+using AudioMapper.Models;
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
-
-#endif
-
-using AudioMapper.Models;
-using AudioMapper.Helpers;
 using PropertyChanged;
-using System.Linq;
 using System;
+using System.Linq;
 
 namespace AudioMapper.Controllers
 {
     [AddINotifyPropertyChangedInterface]
-    public class AudioMapController : IMMNotificationClient, IDisposable
+    public class AudioMapsController : IMMNotificationClient, IDisposable
     {
         private readonly MMDeviceEnumerator deviceEnumerator;
         private readonly AudioMaps deviceMaps;
 
-        public AudioMapController()
+        public AudioMapsController()
         {
             deviceEnumerator = new MMDeviceEnumerator();
             deviceMaps = new AudioMaps();
@@ -34,22 +23,23 @@ namespace AudioMapper.Controllers
 
         public SoundDevices Devices { get; set; }
 
+        public void Dispose()
+        {
+            Helper.ConsumeExceptions(() => deviceEnumerator?.Dispose());
+            Helper.ConsumeExceptions(() => deviceMaps?.Dispose());
+        }
+
         public void Map()
         {
-#if USE_CSCORE
-            using (MMDeviceCollection systemDevices = GetAllActiveSystemDevices())
-            {
-#else
             MMDeviceCollection systemDevices = GetAllActiveSystemDevices();
-#endif
 
             foreach (Device destination in Devices?.Where(d => d.MappedDevices.Any()).ToList())
             {
                 foreach (MappedDevice origin in destination.MappedDevices)
                 {
-                    using (MMDevice input = (MMDevice)systemDevices?.FirstOrDefault(d => ((MMDevice)d).ID == origin.Id))
+                    using (MMDevice input = systemDevices?.FirstOrDefault(d => d.ID == origin.Id))
                     {
-                        using (MMDevice output = (MMDevice)systemDevices?.FirstOrDefault(d => ((MMDevice)d).ID == destination.Id))
+                        using (MMDevice output = systemDevices?.FirstOrDefault(d => d.ID == destination.Id))
                         {
                             if (input == null || output == null)
                             {
@@ -64,9 +54,6 @@ namespace AudioMapper.Controllers
                     }
                 }
             }
-#if USE_CSCORE
-            }
-#endif
         }
 
         void IMMNotificationClient.OnDefaultDeviceChanged(DataFlow dataFlow, Role role, string deviceId)
@@ -120,7 +107,7 @@ namespace AudioMapper.Controllers
 
         private void AddDeviceIfNewById(string id)
         {
-            Devices?.AddMMDeviceIfNew((MMDevice)deviceEnumerator?.GetDevice(id));
+            Devices?.AddMMDeviceIfNew(deviceEnumerator?.GetDevice(id));
         }
 
         private MMDeviceCollection GetAllActiveSystemDevices()
@@ -130,19 +117,13 @@ namespace AudioMapper.Controllers
 
         private SoundDevices GetSoundDevices()
         {
-            return new SoundDevices(GetAllActiveSystemDevices()?.Select(d => Device.FromMMDevice((MMDevice)d)));
+            return new SoundDevices(GetAllActiveSystemDevices()?.Select(d => Device.FromMMDevice(d)));
         }
 
         private void RemoveDeviceById(string id)
         {
             deviceMaps?.RemoveAllAudioMapsWithId(id);
             Devices?.RemoveAllUsagesOfDeviceById(id);
-        }
-
-        public void Dispose()
-        {
-            Helper.ConsumeExceptions(() => deviceEnumerator?.Dispose());
-            Helper.ConsumeExceptions(() => deviceMaps?.Dispose());
         }
     }
 }

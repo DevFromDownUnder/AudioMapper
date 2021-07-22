@@ -15,14 +15,14 @@ namespace AudioMapper
     /// </summary>
     public partial class MainWindow : Window
     {
-        private AudioMapController controller;
+        private AudioMapsController controller;
         private Point lastMouseDown;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            controller = new AudioMapController();
+            controller = new AudioMapsController();
 
             TvSoundDevices.ItemsSource = controller.Devices;
         }
