@@ -19,6 +19,8 @@ namespace AudioMapper.Models
             Origin = origin;
             Destination = destination;
 
+            volume = origin.Volume;
+
             switch (originDevice.DataFlow)
             {
                 case DataFlow.Capture:
@@ -45,8 +47,19 @@ namespace AudioMapper.Models
 
         public float Volume
         {
-            get => FunctionHelper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume : volume);
-            set => FunctionHelper.ConsumeExceptions(() => PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing ? PlaybackStream.Volume = value : volume = value);
+            get => volume;
+            set
+            {
+                FunctionHelper.ConsumeExceptions(() =>
+                {
+                    volume = value;
+
+                    if (PlaybackStream != null && PlaybackStream.PlaybackState == PlaybackState.Playing)
+                    {
+                        PlaybackStream.Volume = value;
+                    }
+                });
+            }
         }
 
         private WaveInProvider Buffer { get; set; }

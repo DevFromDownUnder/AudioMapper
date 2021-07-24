@@ -1,9 +1,4 @@
-﻿using NAudio.CoreAudioApi;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-
-namespace AudioMapper.Models
+﻿namespace AudioMapper.Models
 {
     public static class SoundDevices
     {

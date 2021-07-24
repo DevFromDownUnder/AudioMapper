@@ -1,95 +1,80 @@
 ﻿using AudioMapper.Controllers;
 using AudioMapper.Helpers;
 using AudioMapper.Models;
+using MaterialDesignExtensions.Controls;
 using System;
-using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace AudioMapper
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : MaterialWindow
     {
         private Point lastMouseDown;
-
-        public DeviceController Controller { get; } = new DeviceController();
 
         public MainWindow()
         {
             //Need to set context for some reason it doesn't default
             DataContext = this;
 
+            ThemeHelper.BindTheme();
+
+            SettingsHelper.LoadSettings(false);
+
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        public DeviceController Controller { get; } = new DeviceController();
+
+        private void BoundDevices_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => lastMouseDown = e.GetPosition(TvSoundDevices);
+
+        private void BoundDevices_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) => lastMouseDown = default;
+
+        private void BoundDevices_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            try
+            if (sender is FrameworkElement element && element.DataContext is Device origin)
             {
-                Controller.PushMapsToLive();
-            }
-            catch (Exception ex)
-            {
-                throw;
+                if (Controller?.SourceExistsDeviceById(origin.Id) ?? false)
+                {
+                    Device destination = Controller?.GetDestinationDeviceBySourceDeviceId(origin.Id);
+
+                    if (destination != null)
+                    {
+                        Controller?.UpRemoveProposedMap(origin, destination);
+                    }
+                }
             }
         }
 
-        private Device GetVisualParentDevice(DependencyObject item)
+        private void btnPlay_Click(object sender, RoutedEventArgs e)
         {
-            //Dodgey work around for .net having no nice Parent for databound object
-            //We are looping through all elements looking for our Device
-            if (!(VisualTreeHelper.GetParent(item) is FrameworkElement visualParent))
-            {
-                return null;
-            }
+            FunctionHelper.ConsumeExceptions(() => Controller?.Start());
+        }
 
-            if (visualParent.DataContext is Device parentDevice)
-            {
-                return parentDevice;
-            }
-            else
-            {
-                return GetVisualParentDevice(visualParent);
-            }
+        private void btnStop_Click(object sender, RoutedEventArgs e)
+        {
+            FunctionHelper.ConsumeExceptions(() => Controller?.Stop());
+        }
+
+        private void btnUpdateMap_Click(object sender, RoutedEventArgs e)
+        {
+            FunctionHelper.ConsumeExceptions(() => Controller?.PushMapsToLive());
         }
 
         private bool IsValidDropTarget(DragEventArgs e, ref Device origin, ref Device destination)
         {
-            if (!(e.Data.GetData(typeof(Device)) is Device sourceDevice) || !(e.OriginalSource is TextBlock targetElement) || !(targetElement.DataContext is Device targetDevice))
+            if (!(e.Data.GetData(typeof(Device)) is Device childDevice) || !(e.OriginalSource is FrameworkElement targetElement) || !(targetElement.DataContext is Device parentDevice))
             {
                 return false;
             }
 
-            destination = sourceDevice;
-            origin = targetDevice;
+            destination = parentDevice;
+            origin = childDevice;
 
             return Controller?.CanMap(origin, destination) ?? false;
-        }
-
-        private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => lastMouseDown = e.GetPosition(TvSoundDevices);
-
-        private void StackPanel_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) => lastMouseDown = default;
-
-        private void StackPanel_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (!(sender is Grid grid) || !(grid.DataContext is Device selectedDevice))
-            {
-                return;
-            }
-
-            Device parentDevice = GetVisualParentDevice(grid);
-            //controller.RemoveMapIfExists(selectedDevice?.Id, parentDevice?.Id);
-            //parentDevice?.MappedDevices.Remove(selectedDevice);
-
-            //if (!parentDevice.MappedDevices.Any())
-            //{
-            //    parentDevice.MapState = SoundDevices.MapState.Inactive;
-            //}
         }
 
         private void TvSoundDevices_DragOver(object sender, DragEventArgs e)

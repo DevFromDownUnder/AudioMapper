@@ -8,18 +8,15 @@ using Swordfish.NET.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AudioMapper.Controllers
 {
     [AddINotifyPropertyChangedInterface]
     public class DeviceController : IDisposable, IMMNotificationClient
     {
-        private bool disposedValue;
-
-        private readonly MMDeviceEnumerator deviceEnumerator;
         private readonly AudioMapController controller;
+        private readonly MMDeviceEnumerator deviceEnumerator;
+        private bool disposedValue;
 
         public DeviceController()
         {
@@ -27,16 +24,6 @@ namespace AudioMapper.Controllers
             deviceEnumerator = new MMDeviceEnumerator();
             InitializeDevices();
             deviceEnumerator.RegisterEndpointNotificationCallback(this);
-        }
-
-        public void InitializeDevices()
-        {
-            MMDeviceCollection devices = deviceEnumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
-
-            foreach (MMDevice device in devices)
-            {
-                AddDevice(device);
-            }
         }
 
         public ConcurrentObservableSortedCollection<Device> Devices { get; internal set; } = new ConcurrentObservableSortedCollection<Device>(new DeviceComparer());
@@ -47,117 +34,6 @@ namespace AudioMapper.Controllers
             {
                 return controller;
             }
-        }
-
-        /// <summary>
-        /// Removed regardless of live mappings
-        /// </summary>
-        public void RemoveAllById(string id)
-        {
-            //Remove root devices
-            var devices = Devices?.Where((d) => d.Id == id)?.ToList();
-
-            foreach (Device device in devices)
-            {
-                Devices?.Remove(device);
-            }
-
-            //Remove mapped devices
-            foreach (Device device in Devices)
-            {
-                var mappedDevices = device.MappedDevices?.Where((m) => m.Id == id)?.ToList();
-
-                foreach (Device mappedDevice in mappedDevices)
-                {
-                    device?.MappedDevices?.Remove(mappedDevice);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Changes state if exists in live mappings, removed otherwise
-        /// </summary>
-        public void RemoveProposedMapById(string originId, string destinationId)
-        {
-            var liveMapExists = controller?.ExistsById(originId, destinationId) ?? false;
-
-            var devices = Devices?.Where((d) => d.Id == originId)?.ToList();
-
-            foreach (Device device in devices)
-            {
-                //Remove mapped devices
-                var mappedDevices = device.MappedDevices?.Where((m) => m.Id == destinationId)?.ToList();
-
-                foreach (Device mappedDevice in mappedDevices)
-                {
-                    if (liveMapExists)
-                    {
-                        mappedDevice.PendingAction = SoundDevices.PendingAction.Remove;
-                    }
-                    else
-                    {
-                        device?.MappedDevices?.Remove(mappedDevice);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Changes state if exists in live mappings, removed otherwise
-        /// </summary>
-        public void RemoveProposedMap(Device origin, Device destination)
-        {
-            RemoveProposedMapById(origin.Id, destination.Id);
-        }
-
-        /// <summary>
-        /// Removes mapping regardless of live mapping
-        /// </summary>
-        public void RemoveMapById(string originId, string destinationId)
-        {
-            var devices = Devices?.Where((d) => d.Id == originId)?.ToList();
-
-            foreach (Device device in devices)
-            {
-                //Remove mapped devices
-                var mappedDevices = device.MappedDevices?.Where((m) => m.Id == destinationId)?.ToList();
-
-                foreach (Device mappedDevice in mappedDevices)
-                {
-                    device?.MappedDevices?.Remove(mappedDevice);
-                }
-
-                if ((device?.MappedDevices?.Count ?? 1) == 0)
-                {
-                    //No maps left, update the status
-                    device.MapState = SoundDevices.MapState.Inactive;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes mapping regardless of live mapping
-        /// </summary>
-        public void RemoveMap(Device origin, Device destination)
-        {
-            RemoveMapById(origin.Id, destination.Id);
-        }
-
-        public bool CanMap(Device origin, Device destination)
-        {
-            return origin.DeviceType != SoundDevices.DeviceType.Input &&
-                   origin.Id != destination.Id &&
-                   !Exists(origin, destination);
-        }
-
-        public bool ExistsById(string originId, string destinationId)
-        {
-            return Devices?.Any((d) => d.Id == originId && (d.MappedDevices?.Any((m) => m.Id == destinationId) ?? false)) ?? false;
-        }
-
-        public bool Exists(Device origin, Device destination)
-        {
-            return ExistsById(origin.Id, destination.Id);
         }
 
         public void AddDevice(Device device)
@@ -183,8 +59,157 @@ namespace AudioMapper.Controllers
 
         public void AddMap(Device origin, Device destination)
         {
-            destination.PendingAction = SoundDevices.PendingAction.Add;
-            origin?.MappedDevices?.Add(destination);
+            destination?.MappedDevices?.Add(origin.CopyForAction(SoundDevices.PendingAction.Add));
+        }
+
+        public bool CanMap(Device origin, Device destination)
+        {
+            return destination.DeviceType != SoundDevices.DeviceType.Input &&
+                   origin.DeviceId != destination.DeviceId &&
+                   !Exists(origin, destination);
+        }
+
+        public bool DestinationDeviceExistsById(Guid Id)
+        {
+            return Devices?.Any((d) => d.Id == Id) ?? false;
+        }
+
+        public bool Exists(Device origin, Device destination)
+        {
+            return ExistsByDeviceId(origin.DeviceId, destination.DeviceId);
+        }
+
+        public bool ExistsByDeviceId(string originId, string destinationId)
+        {
+            return Devices?.Any((d) => d.DeviceId == destinationId && (d.MappedDevices?.Any((m) => m.DeviceId == originId) ?? false)) ?? false;
+        }
+
+        public Device GetDestinationDeviceById(Guid Id)
+        {
+            return Devices?.FirstOrDefault((d) => d.Id == Id);
+        }
+
+        public Device GetDestinationDeviceBySourceDeviceId(Guid Id)
+        {
+            return Devices?.FirstOrDefault((d) => d.MappedDevices?.Any((m) => m.Id == Id) ?? false);
+        }
+
+        public Device GetSourceDeviceById(Guid Id)
+        {
+            return Devices?.FirstOrDefault((d) => d.MappedDevices?.Any((m) => m.Id == Id) ?? false)?.MappedDevices?.FirstOrDefault((m) => m.Id == Id);
+        }
+
+        public void InitializeDevices()
+        {
+            MMDeviceCollection devices = deviceEnumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+
+            foreach (MMDevice device in devices)
+            {
+                AddDevice(device);
+            }
+        }
+
+        public void PushMapsToLive(int? latencey = null)
+        {
+            var proposedMaps = Devices?.SelectMany((d) => d?.MappedDevices?.Select((m) => (m, d)));
+            List<(string, string)> lstMapsToRemove = new List<(string, string)>();
+
+            foreach (var (origin, destination) in proposedMaps)
+            {
+                switch (origin?.PendingAction)
+                {
+                    case SoundDevices.PendingAction.Add:
+                        //Update origin statuses
+                        origin.MapState = SoundDevices.MapState.Active;
+                        origin.PendingAction = SoundDevices.PendingAction.None;
+
+                        //Update destination statuses
+                        destination.MapState = SoundDevices.MapState.Active;
+                        destination.PendingAction = SoundDevices.PendingAction.None;
+
+                        controller?.Upsert(origin, destination, latencey);
+                        break;
+
+                    case SoundDevices.PendingAction.Remove:
+                        //Can't remove while looping through
+                        lstMapsToRemove.Add((origin.DeviceId, destination.DeviceId));
+
+                        controller?.Remove(origin, destination);
+                        break;
+
+                    case SoundDevices.PendingAction.None:
+                        controller?.Upsert(origin, destination, latencey);
+                        break;
+                }
+            }
+
+            foreach (var (originId, destinationID) in lstMapsToRemove)
+            {
+                RemoveMapByDeviceId(originId, destinationID);
+            }
+        }
+
+        /// <summary>
+        /// Removed regardless of live mappings
+        /// </summary>
+        public void RemoveAllByDeviceId(string id)
+        {
+            //Remove root devices
+            var devices = Devices?.Where((d) => d.DeviceId == id)?.ToList();
+
+            foreach (Device device in devices)
+            {
+                Devices?.Remove(device);
+            }
+
+            //Remove mapped devices
+            foreach (Device device in Devices)
+            {
+                var mappedDevices = device.MappedDevices?.Where((m) => m.DeviceId == id)?.ToList();
+
+                foreach (Device mappedDevice in mappedDevices)
+                {
+                    device?.MappedDevices?.Remove(mappedDevice);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes mapping regardless of live mapping
+        /// </summary>
+        public void RemoveMap(Device origin, Device destination)
+        {
+            RemoveMapByDeviceId(origin.DeviceId, destination.DeviceId);
+        }
+
+        /// <summary>
+        /// Removes mapping regardless of live mapping
+        /// </summary>
+        public void RemoveMapByDeviceId(string originId, string destinationId)
+        {
+            var devices = Devices?.Where((d) => d.DeviceId == destinationId)?.ToList();
+
+            foreach (Device device in devices)
+            {
+                //Remove mapped devices
+                var mappedDevices = device.MappedDevices?.Where((m) => m.DeviceId == originId)?.ToList();
+
+                foreach (Device mappedDevice in mappedDevices)
+                {
+                    device?.MappedDevices?.Remove(mappedDevice);
+                }
+
+                if ((device?.MappedDevices?.Count ?? 1) == 0)
+                {
+                    //No maps left, update the status
+                    device.MapState = SoundDevices.MapState.Inactive;
+                }
+            }
+        }
+
+        public bool SourceExistsDeviceById(Guid Id)
+        {
+            return Devices?.Any((d) => d.MappedDevices?.Any((m) => m.Id == Id) ?? false) ?? false;
         }
 
         public void Start()
@@ -197,42 +222,58 @@ namespace AudioMapper.Controllers
             controller?.Stop();
         }
 
-        public void PushMapsToLive(int? latencey = null)
+        /// <summary>
+        /// Changes state if exists in live mappings, removed otherwise
+        /// </summary>
+        public void UpRemoveProposedMap(Device origin, Device destination)
         {
-            var proposedMaps = Devices?.SelectMany((d) => d?.MappedDevices?.Select((m) => (d, m)));
-            List<(string, string)> lstMapsToRemove = new List<(string, string)>();
+            UpRemoveProposedMapByDeviceId(origin.DeviceId, destination.DeviceId);
+        }
 
-            foreach (var (origin, destination) in proposedMaps)
+        /// <summary>
+        /// Changes state if exists in live mappings, removed otherwise
+        /// </summary>
+        public void UpRemoveProposedMapByDeviceId(string originId, string destinationId)
+        {
+            var liveMapExists = controller?.ExistsByDeviceId(originId, destinationId) ?? false;
+
+            var devices = Devices?.Where((d) => d.DeviceId == destinationId)?.ToList();
+
+            foreach (Device device in devices)
             {
-                if (destination?.PendingAction == SoundDevices.PendingAction.Add)
+                //Remove mapped devices
+                var mappedDevices = device.MappedDevices?.Where((m) => m.DeviceId == originId)?.ToList();
+
+                foreach (Device mappedDevice in mappedDevices)
                 {
-                    //Update origin statuses
-                    origin.MapState = SoundDevices.MapState.Active;
-                    origin.PendingAction = SoundDevices.PendingAction.None;
-
-                    //Update destination statuses
-                    destination.MapState = SoundDevices.MapState.Active;
-                    destination.PendingAction = SoundDevices.PendingAction.None;
-
-                    controller?.Upsert(origin, destination, latencey);
+                    if (liveMapExists)
+                    {
+                        if (mappedDevice.PendingAction == SoundDevices.PendingAction.Remove)
+                        {
+                            mappedDevice.PendingAction = SoundDevices.PendingAction.None;
+                        }
+                        else
+                        {
+                            mappedDevice.PendingAction = SoundDevices.PendingAction.Remove;
+                        }
+                    }
+                    else
+                    {
+                        device?.MappedDevices?.Remove(mappedDevice);
+                    }
                 }
-
-                if (destination?.PendingAction == SoundDevices.PendingAction.Remove)
-                {
-                    //Can't remove while looping through
-                    lstMapsToRemove.Add((origin.Id, destination.Id));
-
-                    controller?.Remove(origin, destination);
-                }
-            }
-
-            foreach (var (originId, destinationID) in lstMapsToRemove)
-            {
-                RemoveMapById(originId, destinationID);
             }
         }
 
         #region ~DeviceController
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -253,25 +294,12 @@ namespace AudioMapper.Controllers
             }
         }
 
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
+        #endregion ~DeviceController
 
         #region MMDeviceNotification handlers
-        public void OnDeviceStateChanged(string deviceId, DeviceState newState)
+
+        public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
         {
-            if (newState == DeviceState.Active)
-            {
-                AddDevice(deviceId);
-            }
-            else
-            {
-                RemoveAllById(deviceId);
-            }
         }
 
         public void OnDeviceAdded(string pwstrDeviceId)
@@ -281,12 +309,25 @@ namespace AudioMapper.Controllers
 
         public void OnDeviceRemoved(string deviceId)
         {
-            RemoveAllById(deviceId);
+            RemoveAllByDeviceId(deviceId);
         }
 
-        public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId) { }
+        public void OnDeviceStateChanged(string deviceId, DeviceState newState)
+        {
+            if (newState == DeviceState.Active)
+            {
+                AddDevice(deviceId);
+            }
+            else
+            {
+                RemoveAllByDeviceId(deviceId);
+            }
+        }
 
-        public void OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key) { }
-        #endregion
+        public void OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key)
+        {
+        }
+
+        #endregion MMDeviceNotification handlers
     }
 }

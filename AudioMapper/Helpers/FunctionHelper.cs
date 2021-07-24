@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AudioMapper.Helpers
 {
-    class FunctionHelper
+    internal class FunctionHelper
     {
         public static void ConsumeExceptions(Action action)
         {

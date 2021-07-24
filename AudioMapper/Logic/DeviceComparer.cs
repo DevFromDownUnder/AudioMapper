@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AudioMapper.Models;
+﻿using AudioMapper.Models;
 using DatabaseHelper.Extensions;
+using System.Collections.Generic;
 
 namespace AudioMapper.Logic
 {
@@ -26,6 +22,5 @@ namespace AudioMapper.Logic
 
             return string.Compare(x.Name.SafeTrim(), y.Name.SafeTrim(), true);
         }
-
     }
 }

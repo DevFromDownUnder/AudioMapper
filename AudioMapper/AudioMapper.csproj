@@ -38,6 +38,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CalcBinding, Version=2.5.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CalcBinding.2.5.2\lib\net45\CalcBinding.dll</HintPath>
+    </Reference>
+    <Reference Include="DynamicExpresso.Core, Version=2.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DynamicExpresso.Core.2.3.1\lib\net461\DynamicExpresso.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MaterialDesignColors, Version=2.0.1.2556, Culture=neutral, PublicKeyToken=df2a72020bd7962a, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaterialDesignColors.2.0.1\lib\net452\MaterialDesignColors.dll</HintPath>
+    </Reference>
+    <Reference Include="MaterialDesignExtensions, Version=3.3.0.0, Culture=neutral, PublicKeyToken=c5ebccebe084d64f, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaterialDesignExtensions.3.3.0\lib\net45\MaterialDesignExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="MaterialDesignThemes.Wpf, Version=4.1.0.2556, Culture=neutral, PublicKeyToken=df2a72020bd7962a, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaterialDesignThemes.4.1.0\lib\net452\MaterialDesignThemes.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Win32.Registry, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Registry.5.0.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
     </Reference>
@@ -83,14 +101,26 @@
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.AccessControl.5.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=5.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.5.0.2\lib\net461\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -112,14 +142,19 @@
     </ApplicationDefinition>
     <Compile Include="Controllers\AudioMapController.cs" />
     <Compile Include="Controllers\DeviceController.cs" />
+    <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\DeviceColorConverter.cs" />
+    <Compile Include="Converters\DeviceImageConverter.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Helpers\FunctionHelper.cs" />
+    <Compile Include="Helpers\SettingsHelper.cs" />
+    <Compile Include="Helpers\ThemeHelper.cs" />
     <Compile Include="Logic\DeviceComparer.cs" />
     <Compile Include="Models\AudioMap.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\SoundDevices.cs" />
-    <Compile Include="Resources\Converters\ResourceImageConverter.cs" />
+    <Compile Include="Models\UserSettings.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -151,37 +186,23 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="FodyWeavers.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="Resources\OutputActiveModifications.psd" />
-    <None Include="Resources\OutputInactiveModifications.psd" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Sources.txt" />
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
     <Resource Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\InputActiveAdd.png" />
-    <Resource Include="Resources\InputActiveNone.png" />
-    <Resource Include="Resources\InputActiveRemove.png" />
-    <Resource Include="Resources\InputInactiveAdd.png" />
-    <Resource Include="Resources\InputInactiveNone.png" />
-    <Resource Include="Resources\InputInactiveRemove.png" />
-    <Resource Include="Resources\OutputActiveAdd.png" />
-    <Resource Include="Resources\OutputActiveNone.png" />
-    <Resource Include="Resources\OutputActiveRemove.png" />
-    <Resource Include="Resources\OutputInactiveAdd.png" />
-    <Resource Include="Resources\OutputInactiveNone.png" />
-    <Resource Include="Resources\OutputInactiveRemove.png" />
+    <SplashScreen Include="Resources\SplashScreen.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -190,6 +211,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\PropertyChanged.Fody.3.4.0\build\PropertyChanged.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\PropertyChanged.Fody.3.4.0\build\PropertyChanged.Fody.props'))" />
     <Error Condition="!Exists('..\packages\Fody.6.5.2\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.6.5.2\build\Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\MaterialDesignThemes.4.1.0\build\MaterialDesignThemes.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MaterialDesignThemes.4.1.0\build\MaterialDesignThemes.targets'))" />
   </Target>
   <Import Project="..\packages\Fody.6.5.2\build\Fody.targets" Condition="Exists('..\packages\Fody.6.5.2\build\Fody.targets')" />
+  <Import Project="..\packages\MaterialDesignThemes.4.1.0\build\MaterialDesignThemes.targets" Condition="Exists('..\packages\MaterialDesignThemes.4.1.0\build\MaterialDesignThemes.targets')" />
 </Project>
